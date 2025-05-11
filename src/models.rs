@@ -14,13 +14,13 @@ pub struct CommitFeatures {
     pub author: String,
     pub date: DateTime<Utc>,
     pub files_changed: Vec<String>,
-    pub was_backported: Option<bool>,
+    pub was_selected: Option<bool>,
     pub upstream_sha: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProviderResult {
-    pub should_backport: bool,
+    pub should_select: bool,
     pub explanation: String,
     pub error: Option<String>,
     pub raw_response: Option<String>,
@@ -30,7 +30,7 @@ pub struct ProviderResult {
 pub struct PredictionResult {
     pub sha: String,
     pub subject: String,
-    pub should_backport: bool,
+    pub should_select: bool,
     pub vote_ratio: String,
     pub provider_results: HashMap<String, ProviderResult>,
 }
@@ -54,7 +54,7 @@ mod tests {
             author: "Test Author <test@example.com>".to_string(),
             date: Utc::now(),
             files_changed: vec!["file1".to_string(), "file2".to_string()],
-            was_backported: Some(true),
+            was_selected: Some(true),
             upstream_sha: Some("def456".to_string()),
         };
 
@@ -66,20 +66,20 @@ mod tests {
         assert_eq!(commit.diff, deserialized.diff);
         assert_eq!(commit.author, deserialized.author);
         assert_eq!(commit.files_changed, deserialized.files_changed);
-        assert_eq!(commit.was_backported, deserialized.was_backported);
+        assert_eq!(commit.was_selected, deserialized.was_selected);
         assert_eq!(commit.upstream_sha, deserialized.upstream_sha);
     }
 
     #[test]
     fn test_provider_result() {
         let result = ProviderResult {
-            should_backport: true,
+            should_select: true,
             explanation: "This is a bug fix".to_string(),
             error: None,
             raw_response: None,
         };
 
-        assert!(result.should_backport);
+        assert!(result.should_select);
         assert_eq!(result.explanation, "This is a bug fix");
         assert_eq!(result.error, None);
         assert_eq!(result.raw_response, None);
@@ -91,7 +91,7 @@ mod tests {
         provider_results.insert(
             "provider1".to_string(),
             ProviderResult {
-                should_backport: true,
+                should_select: true,
                 explanation: "This is a bug fix".to_string(),
                 error: None,
                 raw_response: None,
@@ -101,14 +101,14 @@ mod tests {
         let prediction = PredictionResult {
             sha: "abc123".to_string(),
             subject: "Test commit".to_string(),
-            should_backport: true,
+            should_select: true,
             vote_ratio: "1/1".to_string(),
             provider_results,
         };
 
         assert_eq!(prediction.sha, "abc123");
         assert_eq!(prediction.subject, "Test commit");
-        assert!(prediction.should_backport);
+        assert!(prediction.should_select);
         assert_eq!(prediction.vote_ratio, "1/1");
         assert_eq!(prediction.provider_results.len(), 1);
         assert!(prediction.provider_results.contains_key("provider1"));
