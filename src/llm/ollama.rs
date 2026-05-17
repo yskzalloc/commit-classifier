@@ -5,12 +5,8 @@ use async_trait::async_trait;
 use serde_json::Value;
 use ollama_rs::{
     Ollama,
-    generation::{
-        completion::{
-            request::GenerationRequest,
-        },
-        options::GenerationOptions,
-    },
+    generation::completion::request::GenerationRequest,
+    models::ModelOptions,
 };
 use regex::Regex;
 use url::Url;
@@ -139,7 +135,7 @@ impl Llm for OllamaLlm {
         }
 
         // Create options for the generation request
-        let options = GenerationOptions::default()
+        let options = ModelOptions::default()
             .temperature(temperature)
             .num_predict(max_tokens as i32);
 

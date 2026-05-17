@@ -4,7 +4,7 @@
 use async_trait::async_trait;
 use serde_json::Value;
 use async_openai::{
-    types::{
+    types::chat::{
         ChatCompletionRequestMessage,
         ChatCompletionRequestUserMessageArgs,
         CreateChatCompletionRequestArgs,
@@ -121,7 +121,7 @@ impl Llm for OpenAILlm {
             .model(self.config.model_type.model_name())
             .messages(vec![message])
             .temperature(self.config.base.temperature)
-            .max_tokens(self.config.base.max_tokens as u16)
+            .max_completion_tokens(self.config.base.max_tokens as u32)
             .build()
             .map_err(|e| LlmError::Config(format!("Failed to build request: {}", e)))?;
 
