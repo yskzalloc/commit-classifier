@@ -14,17 +14,6 @@ pub struct UniversalResponse<T> {
 }
 
 /// Provider response formats
-/// Claude-style response with content array format
-#[derive(Deserialize, Debug)]
-pub struct ContentResponse {
-    pub content: Vec<ContentItem>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ContentItem {
-    pub text: String,
-}
-
 /// OpenAI/Nvidia-style response with choices array format
 #[derive(Deserialize, Debug)]
 pub struct ChoicesResponse {
@@ -45,15 +34,6 @@ pub struct ChoiceMessage {
 pub trait ResponseExtractor {
     /// Extract text from a response
     fn extract_text(&self) -> Result<String, crate::llm::LlmError>;
-}
-
-impl ResponseExtractor for ContentResponse {
-    fn extract_text(&self) -> Result<String, crate::llm::LlmError> {
-        if self.content.is_empty() {
-            return Err(crate::llm::LlmError::Api(String::from("Empty content array in API response")));
-        }
-        Ok(self.content[0].text.clone())
-    }
 }
 
 impl ResponseExtractor for ChoicesResponse {
@@ -79,19 +59,6 @@ impl<T: ResponseExtractor> ResponseExtractor for UniversalResponse<T> {
 mod tests {
     use super::*;
     use serde_json::json;
-
-    #[test]
-    fn test_claude_response_extraction() {
-        let response_json = json!({
-            "content": [
-                {"text": "Response from Claude"}
-            ]
-        });
-
-        let response: UniversalResponse<ContentResponse> = serde_json::from_value(response_json).unwrap();
-        let text = response.extract_text().unwrap();
-        assert_eq!(text, "Response from Claude");
-    }
 
     #[test]
     fn test_openai_response_extraction() {
@@ -130,11 +97,6 @@ mod tests {
 
     #[test]
     fn test_empty_response_handling() {
-        let empty_content_json = json!({"content": []});
-        let empty_content: ContentResponse = serde_json::from_value(empty_content_json).unwrap();
-        let result = empty_content.extract_text();
-        assert!(result.is_err());
-
         let empty_choices_json = json!({"choices": []});
         let empty_choices: ChoicesResponse = serde_json::from_value(empty_choices_json).unwrap();
         let result = empty_choices.extract_text();

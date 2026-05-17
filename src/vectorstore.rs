@@ -278,12 +278,13 @@ mod tests {
 
     #[test]
     fn test_metadata_with_custom_fields() {
-        let mut metadata = Metadata::default();
-        metadata.source = Some("test-source".to_string());
-
         let mut extra = HashMap::new();
         extra.insert("custom_field".to_string(), serde_json::Value::String("custom_value".to_string()));
-        metadata.extra = extra;
+        let metadata = Metadata {
+            source: Some("test-source".to_string()),
+            extra,
+            ..Default::default()
+        };
 
         assert_eq!(metadata.source, Some("test-source".to_string()));
         assert_eq!(metadata.extra.get("custom_field").unwrap().as_str().unwrap(), "custom_value");
@@ -308,14 +309,15 @@ mod tests {
 
     #[test]
     fn test_document_with_complex_metadata() {
-        let mut metadata = Metadata::default();
-        metadata.source = Some("complex-source".to_string());
-
         let mut extra = HashMap::new();
         extra.insert("number".to_string(), serde_json::json!(42));
         extra.insert("boolean".to_string(), serde_json::json!(true));
         extra.insert("array".to_string(), serde_json::json!(vec![1, 2, 3]));
-        metadata.extra = extra;
+        let metadata = Metadata {
+            source: Some("complex-source".to_string()),
+            extra,
+            ..Default::default()
+        };
 
         let doc = Document {
             id: "complex-id".to_string(),
@@ -423,7 +425,7 @@ mod tests {
         };
 
         // Test sorting (should be in descending order by score)
-        let mut docs = vec![scored_doc1, scored_doc2, scored_doc3];
+        let mut docs = [scored_doc1, scored_doc2, scored_doc3];
         docs.sort_by(|a, b| b.score.partial_cmp(&a.score).unwrap_or(Ordering::Equal));
 
         assert_eq!(docs[0].score, 0.8);

@@ -146,6 +146,12 @@ impl HuggingFaceEmbeddings {
     }
 }
 
+impl Default for HuggingFaceEmbeddings {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Clone for HuggingFaceEmbeddings {
     fn clone(&self) -> Self {
         info!("Cloning embeddings model, is_initialized={}", self.is_initialized);
