@@ -19,6 +19,7 @@ mod client;
 mod response;
 mod models;
 mod exec;
+mod kiro;
 
 // Re-exports
 pub use provider::LlmFactory;

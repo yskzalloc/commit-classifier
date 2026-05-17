@@ -77,6 +77,7 @@ pub enum LlmProvider {
     Nvidia,
     Ollama,
     Exec,
+    Kiro,
 }
 
 impl fmt::Display for LlmProvider {
@@ -87,6 +88,7 @@ impl fmt::Display for LlmProvider {
             LlmProvider::Nvidia => write!(f, "nvidia"),
             LlmProvider::Ollama => write!(f, "ollama"),
             LlmProvider::Exec => write!(f, "exec"),
+            LlmProvider::Kiro => write!(f, "kiro"),
         }
     }
 }
@@ -99,6 +101,7 @@ impl LlmProvider {
             "nvidia" => Ok(LlmProvider::Nvidia),
             "ollama" => Ok(LlmProvider::Ollama),
             "exec" => Ok(LlmProvider::Exec),
+            "kiro" => Ok(LlmProvider::Kiro),
             _ => Err(LlmError::Config(format!("Unsupported LLM provider: {}", name))),
         }
     }
@@ -146,6 +149,11 @@ impl LlmFactory {
                 let config = ExecConfig::from_json(config)?;
                 Ok(Box::new(ExecLlm::new(config)?))
             },
+            LlmProvider::Kiro => {
+                use crate::llm::kiro::{KiroConfig, KiroLlm};
+                let config = KiroConfig::from_json(config)?;
+                Ok(Box::new(KiroLlm::new(config)?))
+            },
         }
     }
 }
@@ -161,6 +169,7 @@ mod tests {
         assert_eq!(format!("{}", LlmProvider::Nvidia), "nvidia");
         assert_eq!(format!("{}", LlmProvider::Ollama), "ollama");
         assert_eq!(format!("{}", LlmProvider::Exec), "exec");
+        assert_eq!(format!("{}", LlmProvider::Kiro), "kiro");
     }
 
     #[test]
@@ -171,6 +180,7 @@ mod tests {
         assert_eq!(LlmProvider::from_name("nvidia").unwrap(), LlmProvider::Nvidia);
         assert_eq!(LlmProvider::from_name("ollama").unwrap(), LlmProvider::Ollama);
         assert_eq!(LlmProvider::from_name("exec").unwrap(), LlmProvider::Exec);
+        assert_eq!(LlmProvider::from_name("kiro").unwrap(), LlmProvider::Kiro);
 
         // Test case insensitivity
         assert_eq!(LlmProvider::from_name("Claude").unwrap(), LlmProvider::Claude);
@@ -178,6 +188,7 @@ mod tests {
         assert_eq!(LlmProvider::from_name("NvIdIa").unwrap(), LlmProvider::Nvidia);
         assert_eq!(LlmProvider::from_name("OlLaMa").unwrap(), LlmProvider::Ollama);
         assert_eq!(LlmProvider::from_name("ExEc").unwrap(), LlmProvider::Exec);
+        assert_eq!(LlmProvider::from_name("Kiro").unwrap(), LlmProvider::Kiro);
 
         // Test aliases
         assert_eq!(LlmProvider::from_name("gpt4").unwrap(), LlmProvider::OpenAI);
