@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+  RUST_BACKTRACE: 1
+
+jobs:
+  test:
+    name: build + test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libssl-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - run: cargo build --locked --all-targets
+      - run: cargo test --locked
+      # Advisory for now: one deprecated-API warning (ollama_rs::Ollama::new).
+      # Flip continue-on-error off once that is resolved.
+      - name: clippy (advisory)
+        run: cargo clippy --locked --all-targets -- -D warnings
+        continue-on-error: true
+      # Advisory: the tree has never been rustfmt-clean (~1576 lines of diff).
+      # Flip off after a treewide "cargo fmt --all" lands.
+      - name: rustfmt (advisory)
+        run: cargo fmt --all -- --check
+        continue-on-error: true
+
+  dco:
+    name: DCO
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Require Signed-off-by on every PR commit
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          rc=0
+          for c in $(git rev-list "$BASE".."$HEAD"); do
+            if ! git log -1 --format=%B "$c" | grep -qE '^Signed-off-by: .+ <.+@.+>'; then
+              echo "::error::missing Signed-off-by: $(git log -1 --oneline "$c")"
+              rc=1
+            fi
+          done
+          exit $rc
