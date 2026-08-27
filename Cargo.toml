@@ -2,9 +2,11 @@
 name = "commit-classifier"
 version = "0.1.0"
 edition = "2021"
-authors = ["Sasha Luccioni <sasha@anthropic.com>"]
-license = "GPL-2.0"
+authors = ["Sasha Levin <sashal@kernel.org>"]
+license = "GPL-2.0-only"
 description = "Library for classifying commits using LLMs and embeddings"
+repository = "https://github.com/sashalevin/commit-classifier"
+readme = "README.md"
 
 [features]
 default = []
@@ -44,5 +46,3 @@ anthropic-sdk = "0.1.5"
 
 # For tests
 tempfile = "3.27"
-
-[dev-dependencies]
