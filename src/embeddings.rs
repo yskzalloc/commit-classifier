@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 // (c) 2025, Sasha Levin <sashal@kernel.org>
 
-use candle_embed::{BasedBertEmbedder, CandleEmbedBuilder, WithModel};
+use candle_embed::{BasedBertEmbedder, CandleEmbedBuilder};
 use log::{info, error};
 
 pub type Embedding = Vec<f32>;
@@ -33,10 +33,8 @@ impl HuggingFaceEmbeddings {
 
         info!("Initializing embeddings model: {}", self.model_name);
 
-        let model_enum = WithModel::BgeLargeEnV15;
-
         let mut builder = CandleEmbedBuilder::new()
-            .set_model_from_presets(model_enum);
+            .custom_embedding_model(&self.model_name);
 
         #[cfg(feature = "cuda")]
         {

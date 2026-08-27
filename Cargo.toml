@@ -16,7 +16,7 @@ tokio = { version = "1.52", features = ["full"] }
 async-trait = "0.1.89"
 
 # For embeddings
-candle_embed = { git = "https://git.sr.ht/~sashal/candle_embed", default-features = false }
+candle_embed = { git = "https://github.com/ShelbyJenkins/candle_embed", rev = "0a8b2e2ad4a9308906ea0021b1fe520558630171", default-features = false }
 
 # For text processing
 regex = "1.12"
